@@ -81,6 +81,7 @@ async function bootstrapWorker() {
             .on('data', async (data) => {
               try {
                 const repo = repoRepository.create({
+                  githubId: data.id ? parseInt(data.id) : undefined,
                   name: data.name,
                   owner: data.owner,
                   stars: parseInt(data.stars),
