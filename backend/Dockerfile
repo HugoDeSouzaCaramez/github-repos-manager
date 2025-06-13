@@ -1,10 +1,19 @@
 FROM node:18-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+COPY package*.json ./
+
+RUN yarn install
 
 COPY . .
 
-CMD ["yarn", "start:dev"]
+RUN yarn run build
+
+ENV NODE_ENV=production
+
+CMD if [ "$WORKER" = "true" ]; then \
+      yarn run start:worker; \
+    else \
+      yarn run start; \
+    fi

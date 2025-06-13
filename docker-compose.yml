@@ -1,44 +1,59 @@
 services:
-  mariadb:
-    image: mariadb:10.8
+  db:
+    image: mariadb:latest
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: github_repos
+      MYSQL_DATABASE: github_db
     volumes:
-      - mariadb-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "--password=root"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
+      - db-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
 
   rabbitmq:
     image: rabbitmq:3-management
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 
-  backend:
+  app:
     build: ./backend
     environment:
-      DB_HOST: mariadb
-      DB_USER: root
-      DB_PASSWORD: root
-      DB_NAME: github_repos
+      DATABASE_HOST: db
+      DATABASE_PORT: 3306
+      DATABASE_USER: root
+      DATABASE_PASSWORD: root
+      DATABASE_NAME: github_db
       RABBITMQ_URL: amqp://user:password@rabbitmq:5672
+      QUEUE_NAME: import_queue
     ports:
       - "3000:3000"
     depends_on:
-      mariadb:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    restart: on-failure
+      - db
+      - rabbitmq
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  worker:
+    build: ./backend
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 3306
+      DATABASE_USER: root
+      DATABASE_PASSWORD: root
+      DATABASE_NAME: github_db
+      RABBITMQ_URL: amqp://user:password@rabbitmq:5672
+      QUEUE_NAME: import_queue
+      WORKER: "true"
+    depends_on:
+      - db
+      - rabbitmq
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
 
 volumes:
-  mariadb-data:
+  db-data:

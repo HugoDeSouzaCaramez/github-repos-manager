@@ -6,6 +6,9 @@ export class Repo {
   id: number;
 
   @Column()
+  githubId: number;
+
+  @Column()
   name: string;
 
   @Column()

@@ -14,11 +14,11 @@ import { ReposController } from './repos/repos.controller';
   imports: [
     TypeOrmModule.forRoot({
       type: 'mariadb',
-      host: process.env.DB_HOST || 'mariadb',
+      host: process.env.DB_HOST || 'db',
       port: 3306,
       username: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || 'root',
-      database: process.env.DB_NAME || 'github_repos',
+      database: process.env.DB_NAME || 'github_db',
       entities: [Repo],
       synchronize: true,
     }),
