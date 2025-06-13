@@ -1,19 +1,23 @@
 import { Module } from '@nestjs/common';
-import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
-    RabbitMQModule.forRoot({
-      exchanges: [{ name: 'imports', type: 'direct' }],
-      uri: process.env.RABBITMQ_URL || 'amqp://user:password@rabbitmq:5672',
-      connectionInitOptions: { wait: true, timeout: 30000 },
-      connectionManagerOptions: {
-        heartbeatIntervalInSeconds: 5,
-        reconnectTimeInSeconds: 5,
+    ClientsModule.register([
+      {
+        name: 'RABBITMQ_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL || 'amqp://user:password@rabbitmq:5672'],
+          queue: 'import-queue',
+          queueOptions: {
+            durable: true,
+          },
+        },
       },
-    }),
+    ]),
   ],
-  exports: [RabbitMQModule],
+  exports: [ClientsModule],
 })
 
-export class RabbitMQConfigModule {}
+export class RabbitMQModule {}

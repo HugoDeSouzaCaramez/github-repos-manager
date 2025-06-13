@@ -3,15 +3,19 @@ import {
   Post,
   UploadedFile,
   UseInterceptors,
+  Inject,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { RabbitRPC } from '@golevelup/nestjs-rabbitmq';
 import { ImportService } from './import.service';
 import * as fs from 'fs';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Controller('import')
 export class ImportController {
-  constructor(private readonly importService: ImportService) {}
+  constructor(
+    private readonly importService: ImportService,
+    @Inject('RABBITMQ_SERVICE') private readonly rabbitMQClient: ClientProxy,
+  ) {}
 
   @Post('csv')
   @UseInterceptors(FileInterceptor('file'))
@@ -19,16 +23,8 @@ export class ImportController {
     const filePath = `/tmp/${file.originalname}`;
     fs.writeFileSync(filePath, file.buffer);
 
+    this.rabbitMQClient.emit('import-job', { filePath });
+    
     return { jobId: Date.now(), filePath };
-  }
-
-  @RabbitRPC({
-    exchange: 'imports',
-    routingKey: 'import-job',
-    queue: 'import-queue',
-  })
-  async processImportJob(job: { filePath: string }) {
-    await this.importService.processCSV(job.filePath);
-    return { success: true };
   }
 }

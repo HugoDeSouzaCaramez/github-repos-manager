@@ -4,6 +4,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: github_db
+      MYSQL_ROOT_HOST: "%"
     volumes:
       - db-data:/var/lib/mysql
     ports:
@@ -14,6 +15,13 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: user
       RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq 
+    healthcheck:
+      test: rabbitmq-diagnostics -q check_port_connectivity
+      interval: 10s
+      timeout: 10s
+      retries: 10
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -30,30 +38,18 @@ services:
       QUEUE_NAME: import_queue
     ports:
       - "3000:3000"
-    depends_on:
-      - db
-      - rabbitmq
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
 
   worker:
     build: ./backend
     environment:
+      WORKER: "true" 
       DATABASE_HOST: db
       DATABASE_PORT: 3306
       DATABASE_USER: root
       DATABASE_PASSWORD: root
       DATABASE_NAME: github_db
       RABBITMQ_URL: amqp://user:password@rabbitmq:5672
-      QUEUE_NAME: import_queue
-      WORKER: "true"
-    depends_on:
-      - db
-      - rabbitmq
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
 
 volumes:
   db-data:
+  rabbitmq-data:

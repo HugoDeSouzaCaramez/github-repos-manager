@@ -5,7 +5,7 @@ import { AppService } from './app.service';
 import { GitHubService } from './github/github.service';
 import { ImportService } from './import/import.service';
 import { Repo } from './repos/repo.entity';
-import { RabbitMQConfigModule } from './rabbitmq/rabbitmq.module';
+import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
 import { GitHubController } from './github/github.controller';
 import { ImportController } from './import/import.controller';
 import { ReposController } from './repos/repos.controller';
@@ -23,7 +23,7 @@ import { ReposController } from './repos/repos.controller';
       synchronize: true,
     }),
     TypeOrmModule.forFeature([Repo]),
-    RabbitMQConfigModule,
+    RabbitMQModule,
   ],
   controllers: [
     AppController,
