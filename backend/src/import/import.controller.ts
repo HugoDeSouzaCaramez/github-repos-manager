@@ -23,8 +23,8 @@ export class ImportController {
     const filePath = `/tmp/${file.originalname}`;
     fs.writeFileSync(filePath, file.buffer);
 
-    this.rabbitMQClient.emit('import-job', { filePath });
-    
+    this.rabbitMQClient.emit('import-queue', { filePath });
+
     return { jobId: Date.now(), filePath };
   }
 }

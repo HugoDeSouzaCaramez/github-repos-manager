@@ -38,6 +38,8 @@ services:
       QUEUE_NAME: import_queue
     ports:
       - "3000:3000"
+    volumes:
+      - shared-tmp:/tmp
 
   worker:
     build: ./backend
@@ -49,7 +51,10 @@ services:
       DATABASE_PASSWORD: root
       DATABASE_NAME: github_db
       RABBITMQ_URL: amqp://user:password@rabbitmq:5672
+    volumes:
+      - shared-tmp:/tmp
 
 volumes:
+  shared-tmp:
   db-data:
   rabbitmq-data:

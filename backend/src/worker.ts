@@ -65,7 +65,14 @@ async function bootstrapWorker() {
       if (!msg) return;
 
       try {
-        const { filePath } = JSON.parse(msg.content.toString());
+        const message = JSON.parse(msg.content.toString());
+
+        const filePath = message.data.filePath;
+
+        if (!filePath) {
+          throw new Error(`Invalid filePath: ${filePath}`);
+        }
+
         console.log(`📁 Processando arquivo: ${filePath}`);
 
         await new Promise<void>((resolve, reject) => {
