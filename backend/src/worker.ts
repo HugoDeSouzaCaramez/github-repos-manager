@@ -104,7 +104,7 @@ async function bootstrapWorker() {
       } catch (error) {
         console.error('⚠️ Erro no processamento da mensagem:', error);
         
-        const jobId = message?.data?.jobId;
+        const jobId = message?.jobId;
         if (jobId) {
           await jobsService.updateJobStatus(jobId, 'failed');
           

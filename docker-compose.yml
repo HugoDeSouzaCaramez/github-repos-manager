@@ -59,6 +59,15 @@ services:
       - db
       - rabbitmq
 
+  frontend:
+    build: ./frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:3000
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+
 volumes:
   shared-tmp:
   db-data:
