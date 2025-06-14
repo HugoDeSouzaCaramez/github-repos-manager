@@ -5,9 +5,6 @@ export class Repo {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
-  githubId: number;
-
   @Column()
   name: string;
 
@@ -16,7 +13,4 @@ export class Repo {
 
   @Column()
   stars: number;
-
-  @Column({ default: false })
-  processed: boolean;
 }

@@ -3,8 +3,11 @@ import * as amqp from 'amqplib';
 import { createConnection } from 'typeorm';
 import { Repo } from './repos/repo.entity';
 import * as dotenv from 'dotenv';
-import * as csv from 'csv-parser';
-import * as fs from 'fs';
+import { JobsService } from './jobs/jobs.service';
+import { Job } from './jobs/job.entity';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ImportService } from './import/import.service';
 
 dotenv.config();
 
@@ -42,68 +45,78 @@ const connectRabbitMQ = async (): Promise<amqp.Channel> => {
 
 async function bootstrapWorker() {
   try {
-    const dbConnection = await createConnection({
-      type: 'mysql',
+    const app = await NestFactory.createApplicationContext(AppModule);
+    const jobsService = app.get(JobsService);
+    const importService = app.get(ImportService);
+
+    await createConnection({
+      type: 'mariadb',
       host: process.env.DATABASE_HOST || 'db',
       port: parseInt(process.env.DATABASE_PORT || '3306'),
       username: process.env.DATABASE_USER || 'root',
       password: process.env.DATABASE_PASSWORD || 'root',
       database: process.env.DATABASE_NAME || 'github_db',
-      entities: [Repo],
+      entities: [Repo, Job],
       synchronize: true,
     });
-
-    const repoRepository = dbConnection.getRepository(Repo);
     console.log('✅ Conectado ao banco de dados');
 
     const channel = await connectRabbitMQ();
-    const queueName = 'import-queue';
-    await channel.assertQueue(queueName, { durable: true });
+    const importQueue = 'import-queue';
+    const notifyQueue = 'notify-queue';
+    
+    await channel.assertQueue(importQueue, { durable: true });
+    await channel.assertQueue(notifyQueue, { durable: true });
+    
     console.log('⏳ Worker aguardando mensagens...');
 
-    channel.consume(queueName, async (msg) => {
+    channel.consume(importQueue, async (msg) => {
       if (!msg) return;
 
+      let message;
+      
       try {
-        const message = JSON.parse(msg.content.toString());
+        message = JSON.parse(msg.content.toString());
+        const { filePath, jobId } = message.data;
 
-        const filePath = message.data.filePath;
-
-        if (!filePath) {
-          throw new Error(`Invalid filePath: ${filePath}`);
+        if (!filePath || !jobId) {
+          throw new Error(`Invalid message: ${msg.content.toString()}`);
         }
 
-        console.log(`📁 Processando arquivo: ${filePath}`);
+        await jobsService.updateJobStatus(jobId, 'processing');
+        console.log(`📁 Processando arquivo: ${filePath} (Job ID: ${jobId})`);
 
-        await new Promise<void>((resolve, reject) => {
-          fs.createReadStream(filePath)
-            .pipe(csv())
-            .on('data', async (data) => {
-              try {
-                const repo = repoRepository.create({
-                  githubId: data.id ? parseInt(data.id) : undefined,
-                  name: data.name,
-                  owner: data.owner,
-                  stars: parseInt(data.stars),
-                });
-                await repoRepository.save(repo);
-              } catch (error) {
-                console.error('Erro ao salvar repositório:', error);
-              }
-            })
-            .on('end', () => {
-              console.log(`✅ Arquivo processado: ${filePath}`);
-              resolve();
-            })
-            .on('error', (error) => {
-              console.error('❌ Erro ao ler arquivo CSV:', error);
-              reject(error);
-            });
-        });
-
+        await importService.processCSV(filePath);
+        
+        await jobsService.updateJobStatus(jobId, 'completed');
+        console.log(`✅ Arquivo processado: ${filePath} (Job ID: ${jobId})`);
+        
+        channel.sendToQueue(
+          notifyQueue,
+          Buffer.from(JSON.stringify({ 
+            type: 'jobCompleted',
+            jobId
+          })),
+          { persistent: true }
+        );
+        
         channel.ack(msg);
       } catch (error) {
         console.error('⚠️ Erro no processamento da mensagem:', error);
+        
+        const jobId = message?.data?.jobId;
+        if (jobId) {
+          await jobsService.updateJobStatus(jobId, 'failed');
+          
+          channel.sendToQueue(
+            notifyQueue,
+            Buffer.from(JSON.stringify({ 
+              type: 'jobFailed',
+              jobId
+            })),
+            { persistent: true }
+          );
+        }
         channel.nack(msg);
       }
     });

@@ -9,6 +9,12 @@ import { RabbitMQModule } from './rabbitmq/rabbitmq.module';
 import { GitHubController } from './github/github.controller';
 import { ImportController } from './import/import.controller';
 import { ReposController } from './repos/repos.controller';
+import { JobsService } from './jobs/jobs.service';
+import { Job } from './jobs/job.entity';
+import { JobsController } from './jobs/jobs.controller';
+import { NotifyGateway } from './notify/notify.gateway';
+import { NotifyService } from './notify/notify.service';
+import { NotifyConsumer } from './notify/notify.consumer';
 
 @Module({
   imports: [
@@ -19,23 +25,27 @@ import { ReposController } from './repos/repos.controller';
       username: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || 'root',
       database: process.env.DB_NAME || 'github_db',
-      entities: [Repo],
+      entities: [Repo, Job],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([Repo]),
+    TypeOrmModule.forFeature([Repo, Job]),
     RabbitMQModule,
   ],
   controllers: [
     AppController,
     GitHubController,
     ImportController,
-    ReposController
+    ReposController,
+    JobsController,
   ],
   providers: [
     AppService,
     GitHubService,
     ImportService,
+    JobsService,
+    NotifyGateway,
+    NotifyService,
+    NotifyConsumer,
   ],
 })
-
 export class AppModule {}
