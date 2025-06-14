@@ -6,14 +6,20 @@ interface Filters {
   minStars: string;
 }
 
-const RepoTable: React.FC = () => {
+interface RepoTableProps {
+  refreshTrigger: number;
+}
+
+const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [filters, setFilters] = useState<Filters>({
     owner: '',
     minStars: '',
   });
+  const [loading, setLoading] = useState(false);
 
   const fetchRepos = useCallback(async () => {
+    setLoading(true);
     try {
       const { data } = await getRepos(
         filters.owner || undefined, 
@@ -22,12 +28,14 @@ const RepoTable: React.FC = () => {
       setRepos(data);
     } catch (error) {
       console.error('Error fetching repos:', error);
+    } finally {
+      setLoading(false);
     }
   }, [filters.owner, filters.minStars]);
 
   useEffect(() => {
     fetchRepos();
-  }, [fetchRepos]);
+  }, [fetchRepos, refreshTrigger]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -40,18 +48,21 @@ const RepoTable: React.FC = () => {
         <input
           type="text"
           name="owner"
-          placeholder="Filter by owner"
+          placeholder="Filtrar pelo dono"
           value={filters.owner}
           onChange={handleFilterChange}
         />
         <input
           type="number"
           name="minStars"
-          placeholder="Min stars"
+          placeholder="Mínimo de estrelas"
           value={filters.minStars}
           onChange={handleFilterChange}
           min="0"
         />
+        <button onClick={fetchRepos} disabled={loading}>
+          {loading ? 'Atualizando...' : 'Atualizar'}
+        </button>
       </div>
       
       <table>
@@ -72,6 +83,7 @@ const RepoTable: React.FC = () => {
           ))}
         </tbody>
       </table>
+      {repos.length === 0 && !loading && <p>Nenhum repositório encontrado</p>}
     </div>
   );
 };

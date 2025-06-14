@@ -4,7 +4,11 @@ import io from 'socket.io-client';
 
 type SocketType = ReturnType<typeof io>;
 
-const ImportForm: React.FC = () => {
+type Props = {
+  onJobCompleted: () => void;
+};
+
+const ImportForm: React.FC<Props> = ({ onJobCompleted }) => {
   const [file, setFile] = useState<File | null>(null);
   const [jobId, setJobId] = useState<number | null>(null);
   const [jobStatus, setJobStatus] = useState<Job['status'] | null>(null);
@@ -39,6 +43,7 @@ const ImportForm: React.FC = () => {
       newSocket.on('jobCompleted', (data: { jobId: number }) => {
         if (data.jobId === jobId) {
           setJobStatus('completed');
+          onJobCompleted();
           newSocket.disconnect();
         }
       });
@@ -57,6 +62,8 @@ const ImportForm: React.FC = () => {
           
           if (status === 'pending' || status === 'processing') {
             setTimeout(pollJobStatus, 3000);
+          } else if (status === 'completed') {
+            onJobCompleted();
           }
         } catch (err) {
           console.error('Error polling job status:', err);

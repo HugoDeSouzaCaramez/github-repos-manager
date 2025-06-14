@@ -53,16 +53,16 @@ const SearchForm: React.FC = () => {
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter GitHub username"
+          placeholder="Digite o usuário GitHub"
         />
         <button onClick={handleSearch} disabled={loading}>
-          {loading ? 'Searching...' : 'Search'}
+          {loading ? 'Procurando...' : 'Procurar'}
         </button>
         <button 
           onClick={handleExport} 
           disabled={repos.length === 0 || loading}
         >
-          Export CSV
+          Exportar CSV
         </button>
       </div>
       
@@ -78,7 +78,7 @@ const SearchForm: React.FC = () => {
             ))}
           </ul>
         ) : (
-          <p>No repositories found</p>
+          <p>Nenhum repositório encontrado</p>
         )}
       </div>
     </div>
