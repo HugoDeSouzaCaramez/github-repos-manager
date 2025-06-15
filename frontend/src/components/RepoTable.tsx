@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { getRepos, Repo } from '../services/api';
+import React, { useState, useMemo, useCallback } from 'react';
+import { Repo } from '../services/api';
 
 interface Filters {
   owner: string;
@@ -13,11 +13,16 @@ interface SortConfig {
 }
 
 interface RepoTableProps {
+  allRepos: Repo[];
+  loading: boolean;
   refreshTrigger: number;
 }
 
-const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
-  const [repos, setRepos] = useState<Repo[]>([]);
+const RepoTable: React.FC<RepoTableProps> = ({ 
+  allRepos, 
+  loading,
+  refreshTrigger 
+}) => {
   const [filters, setFilters] = useState<Filters>({
     owner: '',
     name: '',
@@ -29,41 +34,30 @@ const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
     direction: 'asc'
   });
   
-  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [reposPerPage, setReposPerPage] = useState(10);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchRepos();
-    }, 500);
+  const filteredRepos = useMemo(() => {
+    let result = [...allRepos];
     
-    return () => clearTimeout(timer);
-  }, [filters, refreshTrigger]);
-
-  const fetchRepos = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data } = await getRepos(
-        filters.owner || undefined,
-        filters.minStars ? parseInt(filters.minStars) : undefined,
-        filters.name || undefined
+    if (filters.owner) {
+      result = result.filter(repo => 
+        repo.owner.toLowerCase().includes(filters.owner.toLowerCase())
       );
-      setRepos(data);
-    } catch (error) {
-      console.error('Erro ao buscar repositórios:', error);
-    } finally {
-      setLoading(false);
     }
-  }, [filters.owner, filters.minStars, filters.name]);
-
-  const handleSort = (field: keyof Repo) => {
-    setSortConfig(prev => ({
-      field,
-      direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
-    }));
-  };
-
-  const sortedRepos = useMemo(() => {
-    return [...repos].sort((a, b) => {
+    if (filters.name) {
+      result = result.filter(repo => 
+        repo.name.toLowerCase().includes(filters.name.toLowerCase())
+      );
+    }
+    if (filters.minStars) {
+      const minStars = parseInt(filters.minStars);
+      if (!isNaN(minStars)) {
+        result = result.filter(repo => repo.stars >= minStars);
+      }
+    }
+    
+    return result.sort((a, b) => {
       if (sortConfig.field === 'stars') {
         return sortConfig.direction === 'asc' 
           ? a.stars - b.stars 
@@ -81,11 +75,62 @@ const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
       }
       return 0;
     });
-  }, [repos, sortConfig]);
+  }, [allRepos, filters, sortConfig]);
+
+  const totalPages = Math.ceil(filteredRepos.length / reposPerPage);
+  const indexOfLastRepo = currentPage * reposPerPage;
+  const indexOfFirstRepo = indexOfLastRepo - reposPerPage;
+  const currentRepos = filteredRepos.slice(indexOfFirstRepo, indexOfLastRepo);
+
+  const handleSort = useCallback((field: keyof Repo) => {
+    setSortConfig(prev => ({
+      field,
+      direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+    setCurrentPage(1);
+  }, []);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleReposPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setReposPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxButtons = 5;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+    let endPage = startPage + maxButtons - 1;
+    
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={currentPage === i ? 'active' : ''}
+          disabled={currentPage === i}
+        >
+          {i}
+        </button>
+      );
+    }
+    
+    return buttons;
   };
 
   return (
@@ -95,7 +140,6 @@ const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
           type="text"
           name="owner"
           placeholder="Filtrar pelo dono"
-          value={filters.owner}
           onChange={handleFilterChange}
           disabled={loading}
         />
@@ -103,7 +147,6 @@ const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
           type="text"
           name="name"
           placeholder="Filtrar por repositório"
-          value={filters.name}
           onChange={handleFilterChange}
           disabled={loading}
         />
@@ -111,7 +154,6 @@ const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
           type="number"
           name="minStars"
           placeholder="Mínimo de estrelas"
-          value={filters.minStars}
           onChange={handleFilterChange}
           min="0"
           disabled={loading}
@@ -152,7 +194,7 @@ const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
             </tr>
           </thead>
           <tbody>
-            {sortedRepos.map((repo) => (
+            {currentRepos.map((repo) => (
               <tr key={repo.id}>
                 <td className="breakable">{repo.owner}</td>
                 <td className="breakable">{repo.name}</td>
@@ -161,12 +203,67 @@ const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
             ))}
           </tbody>
         </table>
-        {sortedRepos.length === 0 && !loading && <p>Nenhum repositório encontrado</p>}
+        
+        {filteredRepos.length === 0 && !loading && <p>Nenhum repositório encontrado</p>}
+        
         {loading && (
           <div className="loading-indicator">
             Carregando repositórios...
           </div>
         )}
+      </div>
+      
+      <div className="pagination">
+        <div className="pagination-controls">
+          <button 
+            onClick={() => handlePageChange(1)} 
+            disabled={currentPage === 1 || loading}
+          >
+            Primeira
+          </button>
+          <button 
+            onClick={() => handlePageChange(currentPage - 1)} 
+            disabled={currentPage === 1 || loading}
+          >
+            Anterior
+          </button>
+          
+          {renderPaginationButtons()}
+          
+          <button 
+            onClick={() => handlePageChange(currentPage + 1)} 
+            disabled={currentPage === totalPages || totalPages === 0 || loading}
+          >
+            Próxima
+          </button>
+          <button 
+            onClick={() => handlePageChange(totalPages)} 
+            disabled={currentPage === totalPages || totalPages === 0 || loading}
+          >
+            Última
+          </button>
+        </div>
+        
+        <div className="pagination-info">
+          <span>
+            Exibindo {Math.min(indexOfFirstRepo + 1, filteredRepos.length)} - {Math.min(indexOfLastRepo, filteredRepos.length)} de {filteredRepos.length} repositórios
+          </span>
+          
+          <div className="page-size-selector">
+            <span>Itens por página:</span>
+            <select 
+              value={reposPerPage} 
+              onChange={handleReposPerPageChange}
+              disabled={loading}
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   );
