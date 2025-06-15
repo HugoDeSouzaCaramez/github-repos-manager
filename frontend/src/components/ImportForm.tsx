@@ -37,7 +37,7 @@ const ImportForm: React.FC<Props> = ({ onJobCompleted }) => {
       const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:3000');
       
       newSocket.on('connect', () => {
-        console.log('Connected to WebSocket');
+        console.log('Conectado ao WebSocket');
       });
       
       newSocket.on('jobCompleted', (data: { jobId: number }) => {
@@ -49,7 +49,7 @@ const ImportForm: React.FC<Props> = ({ onJobCompleted }) => {
       });
       
       newSocket.on('error', (err: any) => {
-        console.error('WebSocket error:', err);
+        console.error('Erro no WebSocket:', err);
       });
       
       setSocket(newSocket);
@@ -66,14 +66,14 @@ const ImportForm: React.FC<Props> = ({ onJobCompleted }) => {
             onJobCompleted();
           }
         } catch (err) {
-          console.error('Error polling job status:', err);
+          console.error('Erro ao verificar status:', err);
         }
       };
       
       pollJobStatus();
       
     } catch (err) {
-      setError('Import failed');
+      setError('Falha na importação');
       console.error(err);
     } finally {
       setLoading(false);
@@ -91,16 +91,21 @@ const ImportForm: React.FC<Props> = ({ onJobCompleted }) => {
   return (
     <div className="import-form">
       <div className="import-controls">
-        <input 
-          type="file" 
-          accept=".csv" 
-          onChange={handleFileChange} 
-        />
+        <div className="file-input-container">
+          <label className="file-input-label">
+            <input 
+              type="file" 
+              accept=".csv" 
+              onChange={handleFileChange} 
+            />
+            <span>{file ? file.name : 'Nenhum arquivo escolhido'}</span>
+          </label>
+        </div>
         <button 
           onClick={handleImport} 
           disabled={!file || loading}
         >
-          {loading ? 'Importing...' : 'Import CSV'}
+          {loading ? 'Importando...' : 'Importar CSV'}
         </button>
       </div>
       
@@ -108,11 +113,11 @@ const ImportForm: React.FC<Props> = ({ onJobCompleted }) => {
       
       {jobId && (
         <div className="job-status">
-          <h3>Import Status</h3>
-          <p>Job ID: {jobId}</p>
+          <h3>Status da Importação</h3>
+          <p>ID do Job: {jobId}</p>
           <p>Status: 
             <span className={`status-${jobStatus}`}>
-              {jobStatus?.toUpperCase()}
+              {` ${jobStatus?.toUpperCase()}`}
             </span>
           </p>
         </div>

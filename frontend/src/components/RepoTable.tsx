@@ -27,7 +27,7 @@ const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
       );
       setRepos(data);
     } catch (error) {
-      console.error('Error fetching repos:', error);
+      console.error('Erro ao buscar repositórios:', error);
     } finally {
       setLoading(false);
     }
@@ -51,6 +51,7 @@ const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
           placeholder="Filtrar pelo dono"
           value={filters.owner}
           onChange={handleFilterChange}
+          disabled={loading}
         />
         <input
           type="number"
@@ -59,31 +60,39 @@ const RepoTable: React.FC<RepoTableProps> = ({ refreshTrigger }) => {
           value={filters.minStars}
           onChange={handleFilterChange}
           min="0"
+          disabled={loading}
         />
         <button onClick={fetchRepos} disabled={loading}>
           {loading ? 'Atualizando...' : 'Atualizar'}
         </button>
       </div>
       
-      <table>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Dono(a)</th>
-            <th>Estrelas</th>
-          </tr>
-        </thead>
-        <tbody>
-          {repos.map((repo) => (
-            <tr key={repo.id}>
-              <td>{repo.name}</td>
-              <td>{repo.owner}</td>
-              <td>{repo.stars}</td>
+      <div className="repo-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Dono(a)</th>
+              <th>Estrelas</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {repos.length === 0 && !loading && <p>Nenhum repositório encontrado</p>}
+          </thead>
+          <tbody>
+            {repos.map((repo) => (
+              <tr key={repo.id}>
+                <td>{repo.name}</td>
+                <td>{repo.owner}</td>
+                <td>{repo.stars}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {repos.length === 0 && !loading && <p>Nenhum repositório encontrado</p>}
+        {loading && (
+          <div className="loading-indicator">
+            Carregando repositórios...
+          </div>
+        )}
+      </div>
     </div>
   );
 };

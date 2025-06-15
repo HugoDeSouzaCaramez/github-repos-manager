@@ -17,7 +17,7 @@ const SearchForm: React.FC = () => {
       const response = await searchUserRepos(username);
       setRepos(response.data);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'User not found or API error');
+      setError(err.response?.data?.message || 'Usuário não encontrado ou erro na API');
       console.error(err);
     } finally {
       setLoading(false);
@@ -41,7 +41,7 @@ const SearchForm: React.FC = () => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      setError('Export failed');
+      setError('Falha na exportação');
       console.error(err);
     }
   };
@@ -54,9 +54,15 @@ const SearchForm: React.FC = () => {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Digite o usuário GitHub"
+          disabled={loading}
         />
-        <button onClick={handleSearch} disabled={loading}>
-          {loading ? 'Procurando...' : 'Procurar'}
+        <button onClick={handleSearch} disabled={loading || !username}>
+          {loading ? (
+            <>
+              <span className="spinner"></span>
+              Procurando...
+            </>
+          ) : 'Procurar'}
         </button>
         <button 
           onClick={handleExport} 
@@ -73,7 +79,8 @@ const SearchForm: React.FC = () => {
           <ul>
             {repos.map((repo, index) => (
               <li key={index}>
-                <strong>{repo.name}</strong> - {repo.owner} (⭐ {repo.stars})
+                <strong>{repo.name}</strong> - {repo.owner}
+                <span className="stars">⭐ {repo.stars}</span>
               </li>
             ))}
           </ul>
