@@ -192,16 +192,20 @@ table {
 
 table th {
   background-color: #F9FAFB;
-  text-align: left;
+  text-align: center;
   padding: 1rem 1.5rem;
   font-weight: 600;
   color: var(--text-light);
   border-bottom: 1px solid var(--border);
+  position: relative;
+  padding-right: 30px !important;
 }
 
 table td {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border);
+  text-align: center;
+  vertical-align: top;
 }
 
 table tr:last-child td {
@@ -336,4 +340,32 @@ footer {
   button {
     width: 100%;
   }
+}
+
+.sortable {
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.sortable:hover {
+  background-color: #f0f0f0;
+}
+
+.sortable.sorted {
+  background-color: #e6f0ff;
+}
+
+.sort-icon {
+  position: absolute;
+  right: 10px;
+}
+
+table td.text-right {
+  text-align: right;
+}
+
+.breakable {
+  word-break: break-word;
+  min-width: 120px;
 }

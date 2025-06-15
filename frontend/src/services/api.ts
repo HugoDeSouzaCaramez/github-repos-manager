@@ -39,10 +39,11 @@ export const importReposCSV = (file: File): Promise<AxiosResponse<{ jobId: numbe
 
 export const getRepos = (
   owner?: string, 
-  minStars?: number
+  minStars?: number,
+  name?: string
 ): Promise<AxiosResponse<Repo[]>> => {
   return api.get('/repos', {
-    params: { owner, minStars },
+    params: { owner, minStars, name },
   });
 };
 
