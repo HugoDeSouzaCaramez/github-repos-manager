@@ -17,17 +17,13 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-password}
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
-    healthcheck:
-      test: rabbitmq-diagnostics -q check_port_connectivity
-      interval: 10s
-      timeout: 10s
-      retries: 10
     ports:
       - "5672:5672"
       - "15672:15672"
 
   app:
     build: ./backend
+    env_file: .env
     environment:
       DATABASE_HOST: db
       DATABASE_PORT: 3306
@@ -45,6 +41,7 @@ services:
 
   worker:
     build: ./backend
+    env_file: .env
     environment:
       WORKER: "true"
       DATABASE_HOST: db
