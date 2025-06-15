@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { WebSocketServer } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { NotifyGateway } from './notify.gateway';
 
 @Injectable()
 export class NotifyService {
-  @WebSocketServer()
-  server: Server;
+  constructor(private readonly notifyGateway: NotifyGateway) {}
 
   notifyJobCompletion(jobId: number) {
-    if (this.server) {
-      this.server.emit('jobCompleted', { jobId });
-    }
+    this.notifyGateway.notifyJobCompletion(jobId);
   }
 }

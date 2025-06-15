@@ -34,7 +34,10 @@ const ImportForm: React.FC<Props> = ({ onJobCompleted }) => {
       setJobId(jobId);
       setJobStatus('pending');
       
-      const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:3000');
+      const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:3000', {
+        path: '/socket.io',
+        transports: ['websocket'],
+      });
       
       newSocket.on('connect', () => {
         console.log('Conectado ao WebSocket');
