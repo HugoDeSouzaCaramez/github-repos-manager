@@ -12,6 +12,8 @@ async function bootstrap() {
     credentials: true,
   });
   
+  process.env.APP_TYPE = 'api';
+  
   await app.listen(process.env.PORT ?? 3000);
 }
 

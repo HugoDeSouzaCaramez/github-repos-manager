@@ -11,6 +11,8 @@ import { ImportService } from './import/import.service';
 
 dotenv.config();
 
+process.env.APP_TYPE = 'worker';
+
 const connectRabbitMQ = async (): Promise<amqp.Channel> => {
   while (true) {
     try {

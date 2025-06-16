@@ -7,6 +7,10 @@ export class NotifyConsumer implements OnModuleInit {
   constructor(private readonly notifyService: NotifyService) {}
 
   async onModuleInit() {
+    if (process.env.APP_TYPE === 'worker') {
+      console.log('NotifyConsumer desativado no worker');
+      return;
+    }
     await this.setupNotificationConsumer();
   }
 

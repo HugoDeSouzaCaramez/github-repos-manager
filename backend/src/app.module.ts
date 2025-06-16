@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Provider } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GitHubService } from './github/github.service';
 import { ImportService } from './import/import.service';
@@ -13,6 +13,18 @@ import { JobsController } from './jobs/jobs.controller';
 import { NotifyGateway } from './notify/notify.gateway';
 import { NotifyService } from './notify/notify.service';
 import { NotifyConsumer } from './notify/notify.consumer';
+
+const providers: Provider[] = [
+  GitHubService,
+  ImportService,
+  JobsService,
+  NotifyGateway,
+  NotifyService,
+];
+
+if (process.env.APP_TYPE !== 'worker') {
+  providers.push(NotifyConsumer);
+}
 
 @Module({
   imports: [
@@ -35,13 +47,6 @@ import { NotifyConsumer } from './notify/notify.consumer';
     ReposController,
     JobsController,
   ],
-  providers: [
-    GitHubService,
-    ImportService,
-    JobsService,
-    NotifyGateway,
-    NotifyService,
-    NotifyConsumer,
-  ],
+  providers,
 })
 export class AppModule {}
