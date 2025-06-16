@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { GitHubService } from './github/github.service';
 import { ImportService } from './import/import.service';
 import { Repo } from './repos/repo.entity';
@@ -32,14 +30,12 @@ import { NotifyConsumer } from './notify/notify.consumer';
     RabbitMQModule,
   ],
   controllers: [
-    AppController,
     GitHubController,
     ImportController,
     ReposController,
     JobsController,
   ],
   providers: [
-    AppService,
     GitHubService,
     ImportService,
     JobsService,
