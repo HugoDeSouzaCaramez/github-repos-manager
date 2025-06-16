@@ -36,7 +36,6 @@ const ImportPage: React.FC = () => {
       <RepoTable 
         allRepos={allRepos} 
         loading={loading} 
-        refreshTrigger={refreshTrigger} 
       />
     </div>
   );
