@@ -61,7 +61,7 @@ services:
     environment:
       REACT_APP_API_URL: http://localhost:3000
     ports:
-      - "80:80"
+      - "3001:3001"
     depends_on:
       - app
 
