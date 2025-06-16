@@ -6,11 +6,21 @@ import Pagination from './Pagination';
 interface RepoTableProps {
   allRepos: Repo[];
   loading: boolean;
+  showFilters?: {
+    owner?: boolean;
+    name?: boolean;
+    stars?: boolean;
+  };
 }
 
 const RepoTable: React.FC<RepoTableProps> = ({ 
   allRepos, 
   loading,
+  showFilters = {
+    owner: true,
+    name: true,
+    stars: true
+  }
 }) => {
   const {
     filters,
@@ -37,31 +47,39 @@ const RepoTable: React.FC<RepoTableProps> = ({
   return (
     <div className="repo-table">
       <div className="filters">
-        <input
-          type="text"
-          name="owner"
-          placeholder="Filtrar pelo dono"
-          value={filters.owner}
-          onChange={handleInputChange}
-          disabled={loading}
-        />
-        <input
-          type="text"
-          name="name"
-          placeholder="Filtrar por repositório"
-          value={filters.name}
-          onChange={handleInputChange}
-          disabled={loading}
-        />
-        <input
-          type="number"
-          name="minStars"
-          placeholder="Mínimo de estrelas"
-          value={filters.minStars}
-          onChange={handleInputChange}
-          min="0"
-          disabled={loading}
-        />
+        {showFilters.owner && (
+          <input
+            type="text"
+            name="owner"
+            placeholder="Filtrar pelo dono"
+            value={filters.owner}
+            onChange={handleInputChange}
+            disabled={loading}
+          />
+        )}
+        
+        {showFilters.name && (
+          <input
+            type="text"
+            name="name"
+            placeholder="Filtrar por repositório"
+            value={filters.name}
+            onChange={handleInputChange}
+            disabled={loading}
+          />
+        )}
+        
+        {showFilters.stars && (
+          <input
+            type="number"
+            name="minStars"
+            placeholder="Mínimo de estrelas"
+            value={filters.minStars}
+            onChange={handleInputChange}
+            min="0"
+            disabled={loading}
+          />
+        )}
       </div>
       
       <div className="repo-table-container">

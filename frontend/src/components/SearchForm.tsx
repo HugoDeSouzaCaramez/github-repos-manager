@@ -47,6 +47,11 @@ const SearchForm: React.FC = () => {
         <RepoTable 
           allRepos={repos} 
           loading={loading} 
+          showFilters={{
+            owner: false,
+            name: true,
+            stars: true
+          }}
         />
       </div>
     </div>
