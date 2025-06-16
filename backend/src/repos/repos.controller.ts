@@ -11,20 +11,7 @@ export class ReposController {
   ) {}
 
   @Get()
-  async getRepos(
-    @Query('owner') owner?: string,
-    @Query('minStars') minStars?: number,
-  ): Promise<Repo[]> {
-    const query = this.repoRepository.createQueryBuilder('repo');
-
-    if (owner) {
-      query.andWhere('repo.owner = :owner', { owner });
-    }
-
-    if (minStars) {
-      query.andWhere('repo.stars >= :minStars', { minStars });
-    }
-
-    return query.getMany();
+  async getRepos(): Promise<Repo[]> {
+    return this.repoRepository.find();
   }
 }
