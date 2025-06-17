@@ -12,7 +12,7 @@ COPY . .
 ENV NODE_ENV=production
 
 CMD if [ "$WORKER" = "true" ]; then \
-      yarn ts-node src/worker.ts; \
+      ./wait-for.sh db:3306 rabbitmq:5672 -- yarn ts-node src/worker.ts; \
     else \
-      yarn nest start; \
+      ./wait-for.sh db:3306 rabbitmq:5672 -- yarn nest start; \
     fi
