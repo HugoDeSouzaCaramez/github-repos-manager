@@ -1,16 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Repo } from '../services/api';
-
-interface Filters {
-  owner: string;
-  name: string;
-  minStars: string;
-}
-
-interface SortConfig {
-  field: keyof Repo;
-  direction: 'asc' | 'desc';
-}
+import { Repo, Filters, SortConfig, RepoSortField } from '../types/repo';
 
 export const useRepoTable = (allRepos: Repo[]) => {
   const [filters, setFilters] = useState<Filters>({
@@ -41,8 +30,8 @@ export const useRepoTable = (allRepos: Repo[]) => {
       );
     }
     if (filters.minStars) {
-      const minStars = parseInt(filters.minStars);
-      if (!isNaN(minStars)) {
+      const minStars = Number(filters.minStars);
+      if (!isNaN(minStars) && minStars >= 0) {
         result = result.filter(repo => repo.stars >= minStars);
       }
     }
@@ -72,7 +61,7 @@ export const useRepoTable = (allRepos: Repo[]) => {
   const indexOfFirstRepo = indexOfLastRepo - reposPerPage;
   const currentRepos = filteredRepos.slice(indexOfFirstRepo, indexOfLastRepo);
 
-  const handleSort = useCallback((field: keyof Repo) => {
+  const handleSort = useCallback((field: RepoSortField) => {
     setSortConfig(prev => ({
       field,
       direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc'

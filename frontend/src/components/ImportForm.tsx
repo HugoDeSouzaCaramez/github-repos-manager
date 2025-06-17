@@ -1,11 +1,20 @@
 import React from 'react';
 import { useImportRepos } from '../hooks/useImportRepos';
+import { Job } from '../types/repo';
 
-type Props = {
+interface ImportFormProps {
   onJobCompleted: () => void;
-};
+  importApi: (file: File) => Promise<{ jobId: number; filePath: string }>;
+  jobStatusApi: (jobId: number) => Promise<Job>;
+  createSocket: () => WebSocket;
+}
 
-const ImportForm: React.FC<Props> = ({ onJobCompleted }) => {
+const ImportForm: React.FC<ImportFormProps> = ({ 
+  onJobCompleted,
+  importApi,
+  jobStatusApi,
+  createSocket
+}) => {
   const {
     file,
     jobId,
@@ -14,7 +23,7 @@ const ImportForm: React.FC<Props> = ({ onJobCompleted }) => {
     error,
     handleFileChange,
     handleImport,
-  } = useImportRepos(onJobCompleted);
+  } = useImportRepos(onJobCompleted, importApi, jobStatusApi, createSocket);
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFileChange(e.target.files?.[0] || null);

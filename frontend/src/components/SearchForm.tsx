@@ -1,8 +1,14 @@
 import React from 'react';
 import { useSearchRepos } from '../hooks/useSearchRepos';
 import RepoTable from './common/RepoTable';
+import { Repo } from '../types/repo';
 
-const SearchForm: React.FC = () => {
+interface SearchFormProps {
+  searchApi: (username: string) => Promise<Repo[]>;
+  exportApi: (username: string) => Promise<Blob>;
+}
+
+const SearchForm: React.FC<SearchFormProps> = ({ searchApi, exportApi }) => {
   const {
     username,
     setUsername,
@@ -12,7 +18,7 @@ const SearchForm: React.FC = () => {
     error,
     handleSearch,
     handleExport,
-  } = useSearchRepos();
+  } = useSearchRepos(searchApi, exportApi);
 
   return (
     <div className="search-form">
@@ -26,12 +32,7 @@ const SearchForm: React.FC = () => {
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         />
         <button onClick={handleSearch} disabled={loading || !username}>
-          {loading ? (
-            <>
-              <span className="spinner"></span>
-              Procurando...
-            </>
-          ) : 'Procurar'}
+          {loading ? (<>Procurando...</>) : 'Procurar'}
         </button>
         <button 
           onClick={handleExport} 

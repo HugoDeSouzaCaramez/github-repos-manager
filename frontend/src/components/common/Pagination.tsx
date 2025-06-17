@@ -1,27 +1,16 @@
 import React from 'react';
-
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  reposPerPage: number;
-  loading: boolean;
-  onPageChange: (page: number) => void;
-  onReposPerPageChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  totalRepos: number;
-  indexOfFirstRepo: number;
-  indexOfLastRepo: number;
-}
+import { PaginationProps } from '../../types/pagination';
 
 const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   totalPages,
-  reposPerPage,
+  itemsPerPage,
   loading,
   onPageChange,
-  onReposPerPageChange,
-  totalRepos,
-  indexOfFirstRepo,
-  indexOfLastRepo,
+  onItemsPerPageChange,
+  totalItems,
+  indexOfFirstItem,
+  indexOfLastItem,
 }) => {
   const renderPaginationButtons = () => {
     const buttons = [];
@@ -85,14 +74,14 @@ const Pagination: React.FC<PaginationProps> = ({
       
       <div className="pagination-info">
         <span>
-          Exibindo {indexOfFirstRepo} - {indexOfLastRepo} de {totalRepos} repositórios
+          Exibindo {indexOfFirstItem} - {indexOfLastItem} de {totalItems} itens
         </span>
         
         <div className="page-size-selector">
           <span>Itens por página:</span>
           <select 
-            value={reposPerPage} 
-            onChange={onReposPerPageChange}
+            value={itemsPerPage} 
+            onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
             disabled={loading}
           >
             <option value="5">5</option>

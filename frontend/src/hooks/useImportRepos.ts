@@ -1,16 +1,21 @@
-import { useState, useEffect } from 'react';
-import { importReposCSV, getJobStatus, Job } from '../services/api';
-import io from 'socket.io-client';
+import { useState } from 'react';
+import { Job } from '../types/repo';
 
-type SocketType = ReturnType<typeof io>;
+type ImportApi = (file: File) => Promise<{ jobId: number; filePath: string }>;
+type JobStatusApi = (jobId: number) => Promise<Job>;
+type SocketFactory = () => WebSocket;
 
-export const useImportRepos = (onJobCompleted: () => void) => {
+export const useImportRepos = (
+  onJobCompleted: () => void,
+  importApi: ImportApi,
+  jobStatusApi: JobStatusApi,
+  createSocket: SocketFactory
+) => {
   const [file, setFile] = useState<File | null>(null);
   const [jobId, setJobId] = useState<number | null>(null);
   const [jobStatus, setJobStatus] = useState<Job['status'] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [socket, setSocket] = useState<SocketType | null>(null);
 
   const handleFileChange = (file: File | null) => {
     setFile(file);
@@ -23,56 +28,52 @@ export const useImportRepos = (onJobCompleted: () => void) => {
     setError('');
     
     try {
-      const response = await importReposCSV(file);
-      const { jobId } = response.data;
+      const response = await importApi(file);
+      const { jobId } = response;
       setJobId(jobId);
       setJobStatus('pending');
       
-      const newSocket = io(process.env.REACT_APP_API_URL || 'http://localhost:3000', {
-        path: '/socket.io',
-        transports: ['websocket'],
-      });
+      const socket = createSocket();
       
-      newSocket.on('jobCompleted', (data: { jobId: number }) => {
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
         if (data.jobId === jobId) {
-          setJobStatus('completed');
-          onJobCompleted();
-          newSocket.disconnect();
-        }
-      });
-      
-      setSocket(newSocket);
-      
-      const pollJobStatus = async () => {
-        try {
-          const response = await getJobStatus(jobId);
-          const { status } = response.data;
-          setJobStatus(status);
-          
-          if (status === 'pending' || status === 'processing') {
-            setTimeout(pollJobStatus, 3000);
-          } else if (status === 'completed') {
+          setJobStatus(data.status);
+          if (data.status === 'completed') {
             onJobCompleted();
+            socket.close();
           }
-        } catch (err) {
-          console.error('Erro ao verificar status:', err);
         }
       };
       
-      pollJobStatus();
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        pollJobStatus(jobId);
+      };
       
     } catch (err) {
       setError('Falha na importação');
-    } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    return () => {
-      socket?.disconnect();
-    };
-  }, [socket]);
+  const pollJobStatus = async (jobId: number) => {
+    try {
+      const response = await jobStatusApi(jobId);
+      const { status } = response;
+      setJobStatus(status);
+      
+      if (status === 'pending' || status === 'processing') {
+        setTimeout(() => pollJobStatus(jobId), 3000);
+      } else if (status === 'completed') {
+        onJobCompleted();
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Erro ao verificar status:', err);
+      setTimeout(() => pollJobStatus(jobId), 3000);
+    }
+  };
 
   return {
     file,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Repo } from '../../services/api';
+import { Repo, RepoFilterKey, RepoSortField } from '../../types/repo';
 import { useRepoTable } from '../../hooks/useRepoTable';
 import Pagination from './Pagination';
 
@@ -11,6 +11,11 @@ interface RepoTableProps {
     name?: boolean;
     stars?: boolean;
   };
+  filterComponents?: {
+    owner?: React.ReactNode;
+    name?: React.ReactNode;
+    stars?: React.ReactNode;
+  };
 }
 
 const RepoTable: React.FC<RepoTableProps> = ({ 
@@ -20,7 +25,8 @@ const RepoTable: React.FC<RepoTableProps> = ({
     owner: true,
     name: true,
     stars: true
-  }
+  },
+  filterComponents
 }) => {
   const {
     filters,
@@ -37,48 +43,62 @@ const RepoTable: React.FC<RepoTableProps> = ({
   } = useRepoTable(allRepos);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFilterChange(e.target.name as keyof typeof filters, e.target.value);
+    handleFilterChange(e.target.name as RepoFilterKey, e.target.value);
   };
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    handleReposPerPageChange(Number(e.target.value));
-  };
+  const renderHeader = (field: RepoSortField, label: string) => (
+    <th 
+      onClick={() => handleSort(field)}
+      className={`sortable ${sortConfig.field === field ? 'sorted' : ''}`}
+    >
+      {label}
+      <span className="sort-icon">
+        {sortConfig.field === field && (sortConfig.direction === 'asc' ? ' ▲' : ' ▼')}
+      </span>
+    </th>
+  );
 
   return (
     <div className="repo-table">
       <div className="filters">
         {showFilters.owner && (
-          <input
-            type="text"
-            name="owner"
-            placeholder="Filtrar pelo dono"
-            value={filters.owner}
-            onChange={handleInputChange}
-            disabled={loading}
-          />
+          filterComponents?.owner || (
+            <input
+              type="text"
+              name="owner"
+              placeholder="Filtrar pelo dono"
+              value={filters.owner}
+              onChange={handleInputChange}
+              disabled={loading}
+            />
+          )
         )}
         
         {showFilters.name && (
-          <input
-            type="text"
-            name="name"
-            placeholder="Filtrar por repositório"
-            value={filters.name}
-            onChange={handleInputChange}
-            disabled={loading}
-          />
+          filterComponents?.name || (
+            <input
+              type="text"
+              name="name"
+              placeholder="Filtrar por repositório"
+              value={filters.name}
+              onChange={handleInputChange}
+              disabled={loading}
+            />
+          )
         )}
         
         {showFilters.stars && (
-          <input
-            type="number"
-            name="minStars"
-            placeholder="Mínimo de estrelas"
-            value={filters.minStars}
-            onChange={handleInputChange}
-            min="0"
-            disabled={loading}
-          />
+          filterComponents?.stars || (
+            <input
+              type="number"
+              name="minStars"
+              placeholder="Mínimo de estrelas"
+              value={filters.minStars}
+              onChange={handleInputChange}
+              min="0"
+              disabled={loading}
+            />
+          )
         )}
       </div>
       
@@ -86,33 +106,9 @@ const RepoTable: React.FC<RepoTableProps> = ({
         <table>
           <thead>
             <tr>
-              <th 
-                onClick={() => handleSort('owner')}
-                className={`sortable ${sortConfig.field === 'owner' ? 'sorted' : ''}`}
-              >
-                Dono(a)
-                <span className="sort-icon">
-                  {sortConfig.field === 'owner' && (sortConfig.direction === 'asc' ? ' ▲' : ' ▼')}
-                </span>
-              </th>
-              <th 
-                onClick={() => handleSort('name')}
-                className={`sortable ${sortConfig.field === 'name' ? 'sorted' : ''}`}
-              >
-                Repositório
-                <span className="sort-icon">
-                  {sortConfig.field === 'name' && (sortConfig.direction === 'asc' ? ' ▲' : ' ▼')}
-                </span>
-              </th>
-              <th 
-                onClick={() => handleSort('stars')}
-                className={`sortable ${sortConfig.field === 'stars' ? 'sorted' : ''}`}
-              >
-                Estrelas
-                <span className="sort-icon">
-                  {sortConfig.field === 'stars' && (sortConfig.direction === 'asc' ? ' ▲' : ' ▼')}
-                </span>
-              </th>
+              {renderHeader('owner', 'Dono(a)')}
+              {renderHeader('name', 'Repositório')}
+              {renderHeader('stars', 'Estrelas')}
             </tr>
           </thead>
           <tbody>
@@ -138,13 +134,13 @@ const RepoTable: React.FC<RepoTableProps> = ({
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
-        reposPerPage={reposPerPage}
+        itemsPerPage={reposPerPage}
         loading={loading}
         onPageChange={handlePageChange}
-        onReposPerPageChange={handleSelectChange}
-        totalRepos={filteredRepos.length}
-        indexOfFirstRepo={(currentPage - 1) * reposPerPage + 1}
-        indexOfLastRepo={Math.min(currentPage * reposPerPage, filteredRepos.length)}
+        onItemsPerPageChange={handleReposPerPageChange}
+        totalItems={filteredRepos.length}
+        indexOfFirstItem={(currentPage - 1) * reposPerPage + 1}
+        indexOfLastItem={Math.min(currentPage * reposPerPage, filteredRepos.length)}
       />
     </div>
   );
