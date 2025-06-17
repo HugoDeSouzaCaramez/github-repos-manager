@@ -418,3 +418,58 @@ table td.text-right {
   gap: 5px;
   color: #333;
 }
+
+@media (max-width: 768px) {
+  .pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+  
+  .pagination-controls button {
+    min-width: 40px;
+    padding: 6px 8px;
+    font-size: 0.9rem;
+  }
+  
+  .pagination-info {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  
+  .page-size-selector {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .search-bar, .import-controls, .filters {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .search-bar > *, .import-controls > *, .filters > * {
+    width: 100%;
+  }
+  
+  .pagination-info span:first-child {
+    text-align: center;
+  }
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .button-group {
+    flex-direction: column;
+  }
+}
+
+.page-nav {
+  min-width: 70px;
+}

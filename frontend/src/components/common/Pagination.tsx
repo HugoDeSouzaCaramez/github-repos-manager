@@ -46,12 +46,14 @@ const Pagination: React.FC<PaginationProps> = ({
         <button 
           onClick={() => onPageChange(1)} 
           disabled={currentPage === 1 || loading}
+          className="page-nav"
         >
           Primeira
         </button>
         <button 
           onClick={() => onPageChange(currentPage - 1)} 
           disabled={currentPage === 1 || loading}
+          className="page-nav"
         >
           Anterior
         </button>
@@ -61,24 +63,26 @@ const Pagination: React.FC<PaginationProps> = ({
         <button 
           onClick={() => onPageChange(currentPage + 1)} 
           disabled={currentPage === totalPages || totalPages === 0 || loading}
+          className="page-nav"
         >
           Próxima
         </button>
         <button 
           onClick={() => onPageChange(totalPages)} 
           disabled={currentPage === totalPages || totalPages === 0 || loading}
+          className="page-nav"
         >
           Última
         </button>
       </div>
-      
+    
       <div className="pagination-info">
         <span>
           Exibindo {indexOfFirstItem} - {indexOfLastItem} de {totalItems} itens
         </span>
         
         <div className="page-size-selector">
-          <span>Itens por página:</span>
+          <span>Itens/página:</span>
           <select 
             value={itemsPerPage} 
             onChange={(e) => onItemsPerPageChange(Number(e.target.value))}

@@ -39,14 +39,14 @@ const ImportForm: React.FC<ImportFormProps> = ({
               accept=".csv" 
               onChange={handleFileInputChange} 
             />
-            <span>{file ? file.name : 'Nenhum arquivo escolhido'}</span>
+            <span>{file ? file.name : 'Selecionar CSV'}</span>
           </label>
         </div>
         <button 
           onClick={handleImport} 
           disabled={!file || loading}
         >
-          {loading ? 'Importando...' : 'Importar CSV'}
+          {loading ? 'Importando...' : 'Importar'}
         </button>
       </div>
       

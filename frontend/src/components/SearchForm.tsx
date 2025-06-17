@@ -27,19 +27,19 @@ const SearchForm: React.FC<SearchFormProps> = ({ searchApi, exportApi }) => {
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="Digite o usuário GitHub"
+          placeholder="Usuário GitHub"
           disabled={loading}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         />
-        <button onClick={handleSearch} disabled={loading || !username}>
-          {loading ? (<>Procurando...</>) : 'Procurar'}
-        </button>
-        <button 
-          onClick={handleExport} 
-          disabled={repos.length === 0 || loading || exporting}
-        >
-          {exporting ? 'Exportando...' : 'Exportar CSV'}
-        </button>
+          <button onClick={handleSearch} disabled={loading || !username}>
+            {loading ? (<>Procurando...</>) : 'Procurar'}
+          </button>
+          <button 
+            onClick={handleExport} 
+            disabled={repos.length === 0 || loading || exporting}
+          >
+            {exporting ? 'Exportando...' : 'Exportar'}
+          </button>
       </div>
       
       {error && <div className="error">{error}</div>}
