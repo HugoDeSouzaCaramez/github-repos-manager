@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSearchRepos } from '../hooks/useSearchRepos';
-import RepoTable from './RepoTable';
+import RepoTable from './common/RepoTable';
 
 const SearchForm: React.FC = () => {
   const {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ImportForm from '../components/ImportForm';
-import RepoTable from '../components/RepoTable';
+import RepoTable from '../components/common/RepoTable';
 import { getRepos, Repo } from '../services/api';
 
 const ImportPage: React.FC = () => {

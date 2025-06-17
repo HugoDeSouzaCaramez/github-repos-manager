@@ -1,6 +1,6 @@
 import React from 'react';
-import { Repo } from '../services/api';
-import { useRepoTable } from '../hooks/useRepoTable';
+import { Repo } from '../../services/api';
+import { useRepoTable } from '../../hooks/useRepoTable';
 import Pagination from './Pagination';
 
 interface RepoTableProps {
