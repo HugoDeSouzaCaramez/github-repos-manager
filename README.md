@@ -53,7 +53,7 @@ Este projeto é uma aplicação web completa para **pesquisa**, **exportação**
 1. **Clone o repositório:**
 
 ```bash
-git clone https://github.com/seu-usuario/repositorio.git
+git https://github.com/HugoDeSouzaCaramez/github-repos-manager.git
 cd repositorio
 ```
 
