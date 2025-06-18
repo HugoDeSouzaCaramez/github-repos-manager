@@ -3,9 +3,6 @@
 .cache/
 *.tsbuildinfo
 
-.env
-.env.*
-
 .vscode/
 .idea/
 
