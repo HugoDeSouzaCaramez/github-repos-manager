@@ -85,7 +85,7 @@ docker compose up
 ## 📝 Observações
 O projeto utiliza volumes Docker para persistência de dados.
 
-Use seu token do GitHub está pré-configurado no arquivo .env (pode ser substituído).
+Use o token do GitHub que está pré-configurado no arquivo .env (pode ser substituído).
 
 O frontend se reconecta automaticamente em caso de falha na WebSocket.
 
